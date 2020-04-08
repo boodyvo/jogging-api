@@ -1,0 +1,348 @@
+syntax = "proto3";
+package api;
+option go_package = "pb/api";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-swagger/options/annotations.proto";
+import "github.com/mwitkow/go-proto-validators/validator.proto";
+
+
+option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
+    info: {
+        title: "Jogging app API"
+        version: "0.1.0"
+        contact: {
+            name: "Jogging app"
+            email: "boodyvo@gmail.com"
+        }
+    };
+
+    schemes: HTTP;
+    consumes: "application/json";
+
+    security_definitions: {
+        security: {
+            key: "JWT";
+            value: {
+                type: TYPE_API_KEY;
+                in: IN_HEADER;
+                name: "Authorization";
+            }
+        }
+    }
+    security: {
+        security_requirement: {
+            key: "JWT";
+            value: {};
+        }
+    }
+};
+
+service APIService {
+    // User
+
+    rpc CreateAdmin(CreateAdminRequest) returns (CreateAdminResponse) {}
+    // Add permission
+    rpc AddPermission(AddPermissionRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            put: "/api/v1/user/permissions"
+            body: "*"
+        };
+    }
+    // Add role
+    rpc AddRole(AddRoleRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            put: "/api/v1/user/{user_id}/roles/{role}"
+        };
+    }
+    // Remove role
+    rpc RemoveRole(RemoveRoleRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/api/v1/user/{user_id}/roles/{role}"
+        };
+    }
+
+    // Sign up user
+    rpc SignUp(SignUpRequest) returns (SignUpResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/signup"
+            body: "*"
+        };
+    }
+    // Sign in user
+    rpc SignIn(SignInRequest) returns (SignInResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/signin"
+            body: "*"
+        };
+    }
+    // Get current user.
+    rpc GetUser(google.protobuf.Empty) returns (GetUserResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/user"
+        };
+    }
+    // Get user by id.
+    rpc GetUserByID(GetUserRequest) returns (GetUserResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/user/{id}"
+        };
+    }
+    // List users.
+    rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/users"
+        };
+    }
+    // List detailed users.
+    rpc ListUsersDetailed(ListUsersRequest) returns (ListUsersDetailedResponse) {}
+    // Delete current user.
+    rpc DeleteUser(google.protobuf.Empty) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/api/v1/user"
+        };
+    }
+    // Delete user by id.
+    rpc DeleteUserByID(DeleteUserRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/api/v1/user/{id}"
+        };
+    }
+
+    // Auth
+
+    // Refresh token.
+    rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/auth/refresh"
+            body: "*"
+        };
+    }
+
+    // Tracking
+
+    // Create new tracking for current user.
+    rpc CreateTracking(CreateTrackingRequest) returns (CreateTrackingResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/tracking"
+            body: "*"
+        };
+    }
+    // Get tracking by id.
+    rpc GetTracking(GetTrackingRequest) returns (GetTrackingResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/tracking/{id}"
+        };
+    }
+    // List tracking for current user.
+    rpc ListTrackingsForUser(ListTrackingsRequest) returns (ListTrackingsResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/trackings"
+        };
+    }
+    // List trackings for all users.
+    rpc ListTrackings(ListTrackingsRequest) returns (ListTrackingsResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/trackings/all"
+        };
+    }
+    // Delete tracking by id.
+    rpc DeleteTracking(DeleteTrackingRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/api/v1/tracking/{id}"
+        };
+    }
+    // Create report for current user.
+    // Create report for current user.
+    rpc Report(ReportRequest) returns (ReportResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/trackings/report"
+        };
+    }
+}
+
+message CreateAdminRequest {
+    string email = 1 [json_name="email", (validator.field) = {string_not_empty: true}];
+    string password = 2 [json_name="password", (validator.field) = {string_not_empty: true}] ;
+}
+message CreateAdminResponse {
+    string id = 1 [json_name="id"];
+}
+
+message AddPermissionRequest {
+    string user_id = 1 [json_name="user_id", (validator.field) = {string_not_empty: true}];
+    Scope scope = 2 [json_name="scope", (validator.field) = {string_not_empty: true}];
+    Action action = 3 [json_name="action", (validator.field) = {string_not_empty: true}];
+    string item = 4 [json_name="item", (validator.field) = {string_not_empty: true}];
+}
+
+message AddRoleRequest {
+    string user_id = 1 [json_name="user_id", (validator.field) = {string_not_empty: true}];
+    Role role = 2 [json_name="role", (validator.field) = {string_not_empty: true}];
+}
+
+message RemoveRoleRequest {
+    string user_id = 1 [json_name="user_id", (validator.field) = {string_not_empty: true}];
+    Role role = 2 [json_name="role", (validator.field) = {string_not_empty: true}];
+}
+
+message SignUpRequest {
+    string email = 1 [json_name="email", (validator.field) = {string_not_empty: true}];
+    string password = 2 [json_name="password", (validator.field) = {string_not_empty: true}] ;
+}
+message SignUpResponse {
+    string id = 1 [json_name="id"];
+}
+
+message SignInRequest {
+    string email = 1 [json_name="email"];
+    string password = 2 [json_name="password"];
+}
+message SignInResponse {
+    string refresh_token = 1 [json_name="refresh_token"];
+    string access_token = 2 [json_name="access_token"];
+    google.protobuf.Timestamp expire_at = 3 [json_name="expire_at"];
+}
+
+message GetUserRequest {
+    string id = 1 [json_name="id"];
+}
+message GetUserResponse {
+    User user = 1 [json_name="user"];
+}
+
+message ListUsersRequest {
+    int64 per_req = 1 [json_name="per_req"];
+    string cursor = 2 [json_name="cursor"];
+    string query = 3 [json_name="query"];
+}
+message ListUsersResponse {
+    string cursor = 1 [json_name="cursor"];
+    int64 total = 2 [json_name="total"];
+    repeated User users = 3 [json_name="users"];
+}
+
+message ListUsersDetailedResponse {
+    string cursor = 1 [json_name="cursor"];
+    int64 total = 2 [json_name="total"];
+    repeated DetailedUser users = 3 [json_name="users"];
+}
+
+message DeleteUserRequest {
+    string id = 1 [json_name="id"];
+}
+
+message RefreshTokenRequest {
+    string refresh_token = 1 [json_name="refresh_token"];
+}
+message RefreshTokenResponse {
+    string refresh_token = 1 [json_name="refresh_token"];
+    string access_token = 2 [json_name="access_token"];
+    google.protobuf.Timestamp expire_at = 3 [json_name="expire_at"];
+}
+
+message CreateTrackingRequest {
+    string date = 1 [json_name="date"];
+    google.protobuf.Duration time = 2 [json_name="duration"];
+    float distance = 3 [json_name="distance", (validator.field) = {float_gte: 0}];
+    Location location = 4 [json_name="location",(validator.field) = {msg_exists : true}];
+}
+message CreateTrackingResponse {
+    string id = 1 [json_name="id"];
+}
+
+message DeleteTrackingRequest {
+    string id = 1 [json_name="id"];
+}
+
+message GetTrackingRequest {
+   string id = 1 [json_name="id"];
+}
+message GetTrackingResponse {
+    Tracking tracking = 1 [json_name="tracking"];
+}
+
+message ListTrackingsRequest{
+    int64 per_req = 1 [json_name="per_req"];
+    string cursor = 2 [json_name="cursor"];
+    string query = 3 [json_name="query"];
+}
+message ListTrackingsResponse{
+    string cursor = 1 [json_name="cursor"];
+    int64 total = 2 [json_name="total"];
+    repeated Tracking trackings = 3 [json_name="tracking"];
+}
+
+message ReportRequest {
+    string from_date = 1 [json_name="from_date"];
+    google.protobuf.Duration duration = 2 [json_name="duration"];
+}
+message ReportResponse {
+    float average_speed = 1 [json_name="average_speed"];
+    float distance = 2 [json_name="distance"];
+}
+
+// Types
+
+message User {
+    string id = 1 [json_name="id"];
+    string email = 2 [json_name="email"];
+}
+
+message DetailedUser {
+    string id = 1 [json_name="id"];
+    string email = 2 [json_name="email"];
+    repeated string roles = 3 [json_name="roles"];
+    repeated string permissions = 4 [json_name="permissions"];
+}
+
+message Tracking {
+    string id = 1 [json_name="id"];
+    string user_id = 2 [json_name="user_id"];
+    string date = 3 [json_name="date"];
+    google.protobuf.Duration time = 4 [json_name="time"];
+    float distance = 5 [json_name="distance"];
+    Location location = 6 [json_name="location"];
+    Weather weather = 7 [json_name="weather"];
+}
+
+message Location {
+    double longitude = 1 [json_name="longitude", (validator.field) = {float_gte: -180, float_lte: 180}];
+    double latitude = 2 [json_name="latitude", (validator.field) = {float_gte: -90, float_lte: 90}];
+}
+
+message Weather {
+    float temperature = 1 [json_name="temperature"];
+    float temperature_min = 2 [json_name="temperature_min"];
+    float temperature_max = 3 [json_name="temperature_max"];
+    float snowdepth = 4 [json_name="snowdepth"];
+    float winddirection = 5 [json_name="winddirection"];
+    float windspeed = 6 [json_name="windspeed"];
+    float pressure = 7 [json_name="pressure"];
+}
+
+// Enums
+
+enum Role {
+    ROLE_UNSPECIFIED = 0;
+    ROLE_ADMIN = 1;
+    ROLE_MANAGER = 2;
+    ROLE_USER = 3;
+}
+
+enum Scope {
+    SCOPE_UNSPECIFIED = 0;
+    SCOPE_USERS = 1;
+    SCOPE_TRACKINGS = 2;
+    SCOPE_PERMISSIONS = 3;
+}
+
+enum Action {
+    ACTION_UNSPECIFIED = 0;
+    ACTION_READ = 1;
+    ACTION_UPDATE = 2;
+    ACTION_DELETE = 3;
+}

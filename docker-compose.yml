@@ -1,0 +1,34 @@
+version: "3.3"
+services:
+  api:
+    build: .
+    container_name: api
+    environment:
+      SERVICE_NAME: api
+    ports:
+      - "9090:9090"
+    volumes:
+      - .:/app
+  #    command: api-service --port=9090
+
+  gateway:
+    build: .
+    container_name: gateway
+    environment:
+      SERVICE_NAME: gateway
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+#    command: gateway-service --port=8080
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    volumes:
+      - mongovolume:/data/db
+
+volumes:
+  mongovolume:
+    driver: local

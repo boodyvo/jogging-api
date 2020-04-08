@@ -1,0 +1,60 @@
+settings:
+  legacy:
+    force: true
+    interval: 8s
+  server:
+    status: false
+    open: false
+    host: localhost
+    port: 5001
+  resources:
+    outputs: outputs.log
+    logs: logs.log
+    errors: errors.log
+schema:
+  - name: api
+    path: .
+    args:
+      - --port=9090
+    commands:
+      install:
+        status: true
+        method: go build -o /tmp/api ./services/api/cmd/api-service/
+      run:
+        status: true
+        method: /tmp/api
+    watcher:
+      extensions:
+        - go
+      paths:
+        - /
+      ignored_paths:
+        - .git
+        - .realize
+        - vendor
+        - .idea
+        - tests
+        - docs
+  - name: gateway
+    path: .
+    args:
+      - --port=8080
+    commands:
+      install:
+        status: true
+        method: go build -o /tmp/gateway ./services/gateway/cmd/gateway-service/
+      run:
+        status: true
+        method: /tmp/gateway
+    watcher:
+      extensions:
+        - go
+      paths:
+        - /
+      ignored_paths:
+        - .git
+        - .realize
+        - vendor
+        - .idea
+        - tests
+        - docs
